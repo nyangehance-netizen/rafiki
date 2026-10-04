@@ -1,0 +1,51 @@
+plugins {
+    id "com.android.application"
+}
+
+// The website the app opens. Set it when building:  gradle assembleDebug -PappUrl=https://your-site.onrender.com
+def appUrl = (project.findProperty("appUrl") ?: "https://rafiki.onrender.com").toString().trim()
+def versionNum = (project.findProperty("versionCode") ?: "1").toString().toInteger()
+
+android {
+    namespace "tz.rafiki.app"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "tz.rafiki.app"
+        minSdk 24
+        targetSdk 34
+        versionCode versionNum
+        versionName "1.0.${versionNum}"
+        buildConfigField "String", "APP_URL", "\"${appUrl}\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    // Signing key comes from environment variables (GitHub secrets), so it is never stored in the code.
+    // Without them, the build falls back to Android's debug key (fine for testing on your own phone).
+    def ksFile = System.getenv("RAFIKI_KEYSTORE_FILE")
+    signingConfigs {
+        if (ksFile && file(ksFile).exists()) {
+            rafiki {
+                storeFile file(ksFile)
+                storePassword System.getenv("RAFIKI_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("RAFIKI_KEY_ALIAS") ?: "rafiki"
+                keyPassword System.getenv("RAFIKI_KEY_PASSWORD") ?: System.getenv("RAFIKI_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig (ksFile && file(ksFile).exists()) ? signingConfigs.rafiki : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

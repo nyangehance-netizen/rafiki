@@ -1,0 +1,19 @@
+{
+  "name": "Rafiki – Msaidizi wa Kiswahili",
+  "short_name": "Rafiki",
+  "description": "Msaidizi wa akili bandia (AI) anayezungumza Kiswahili.",
+  "lang": "sw",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f5f4",
+  "theme_color": "#0d6e72",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

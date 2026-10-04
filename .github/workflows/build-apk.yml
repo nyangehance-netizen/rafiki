@@ -1,0 +1,76 @@
+# Builds the Rafiki Android app (APK) on every push and posts it on the repo's Releases page.
+#
+# Settings (repo → Settings → Secrets and variables → Actions):
+#   Variables:  APP_URL                 your live Rafiki link, e.g. https://rafiki-xxxx.onrender.com
+#   Secrets:    RAFIKI_KEYSTORE_BASE64  signing key (base64)  ┐ optional: without these the APK uses a
+#               RAFIKI_KEYSTORE_PASSWORD signing key password ┘ temporary test key
+
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Prepare signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.RAFIKI_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/rafiki.jks"
+            echo "RAFIKI_KEYSTORE_FILE=$RUNNER_TEMP/rafiki.jks" >> "$GITHUB_ENV"
+            echo "Using the Rafiki signing key."
+          else
+            echo "::warning::No signing key set. Using a temporary test key (you may need to uninstall the old app before installing a new build)."
+          fi
+
+      - name: Build APK
+        env:
+          RAFIKI_KEYSTORE_PASSWORD: ${{ secrets.RAFIKI_KEYSTORE_PASSWORD }}
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          if [ -z "$APP_URL" ]; then
+            echo "::warning::APP_URL is not set. The app will open https://rafiki.onrender.com — set APP_URL to your own link."
+            APP_URL="https://rafiki.onrender.com"
+          fi
+          echo "App opens: $APP_URL"
+          gradle -p android assembleRelease -PappUrl="$APP_URL" -PversionCode=${{ github.run_number }} --no-daemon
+          cp android/app/build/outputs/apk/release/app-release.apk Rafiki.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Rafiki-apk
+          path: Rafiki.apk
+
+      - name: Publish on the Releases page
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Rafiki 1.0.${{ github.run_number }}
+          make_latest: true
+          files: Rafiki.apk
+          body: |
+            **Pakua Rafiki kwenye simu yako (Android)**
+            1. Bonyeza **Rafiki.apk** hapa chini ili kupakua.
+            2. Fungua faili hilo. Simu ikiuliza, ruhusu "Install unknown apps" kwa kivinjari chako.
+            3. Bonyeza **Install**.

@@ -1,0 +1,13 @@
+{
+  "name": "rafiki",
+  "version": "1.0.0",
+  "description": "Rafiki – msaidizi wa AI wa Kiswahili (a Swahili AI assistant powered by Claude)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

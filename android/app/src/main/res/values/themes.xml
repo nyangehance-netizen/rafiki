@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="RafikiTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#0d6e72</item>
+        <item name="android:colorAccent">#e3a21a</item>
+        <item name="android:statusBarColor">#0d6e72</item>
+        <item name="android:navigationBarColor">#f3f5f4</item>
+        <item name="android:windowBackground">@color/splash</item>
+    </style>
+    <color name="splash">#f3f5f4</color>
+</resources>
