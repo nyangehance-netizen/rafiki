@@ -63,7 +63,15 @@ jobs:
             APP_URL="https://rafiki.onrender.com"
           fi
           echo "App opens: $APP_URL"
-          gradle -p android assembleRelease -PappUrl="$APP_URL" -PversionCode=${{ github.run_number }} --no-daemon
+          set +e
+          gradle -p android assembleRelease -PappUrl="$APP_URL" -PversionCode=${{ github.run_number }} --no-daemon --console=plain 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -ne 0 ]; then
+            # Show the key error lines on the run's summary so they are easy to find
+            grep -E "error:|What went wrong|FAILURE|Could not|Exception|> " build.log | grep -v "^> Task" | head -n 25 | while IFS= read -r l; do echo "::error::$l"; done
+            exit "$code"
+          fi
           cp android/app/build/outputs/apk/release/app-release.apk Rafiki.apk
 
       - uses: actions/upload-artifact@v4

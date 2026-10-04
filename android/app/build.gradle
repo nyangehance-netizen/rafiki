@@ -26,8 +26,9 @@ android {
     // Signing key comes from environment variables (GitHub secrets), so it is never stored in the code.
     // Without them, the build falls back to Android's debug key (fine for testing on your own phone).
     def ksFile = System.getenv("RAFIKI_KEYSTORE_FILE")
+    def hasKey = ksFile != null && !ksFile.isEmpty() && new File(ksFile).exists()
     signingConfigs {
-        if (ksFile && file(ksFile).exists()) {
+        if (hasKey) {
             rafiki {
                 storeFile file(ksFile)
                 storePassword System.getenv("RAFIKI_KEYSTORE_PASSWORD")
@@ -40,7 +41,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig (ksFile && file(ksFile).exists()) ? signingConfigs.rafiki : signingConfigs.debug
+            signingConfig = hasKey ? signingConfigs.getByName("rafiki") : signingConfigs.getByName("debug")
         }
     }
 
